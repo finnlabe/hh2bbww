@@ -53,22 +53,33 @@ analysis_hbw.set_aux("config_groups", {})
 
 from hbw.config.config_run2 import add_config
 import cmsdb.campaigns.run2_2017_nano_v9
+import cmsdb.campaigns.run2_2017_nano_L1nano
+
 
 campaign_run2_2017_nano_v9 = cmsdb.campaigns.run2_2017_nano_v9.campaign_run2_2017_nano_v9
+campaign_run2_2017_nano_L1nano = cmsdb.campaigns.run2_2017_nano_L1nano.campaign_run2_2017_nano_L1nano
 
 # default config
-add_config(
-    analysis_hbw,
-    campaign_run2_2017_nano_v9.copy(),
-    config_name="config_2017",
-    config_id=2,
-)
+#add_config(
+#    analysis_hbw,
+#    campaign_run2_2017_nano_v9.copy(),
+#    config_name="config_2017",
+#    config_id=2,
+#)
 
 # config with limited number of files
+#add_config(
+#    analysis_hbw,
+#    campaign_run2_2017_nano_v9.copy(),
+#    config_name="config_2017_limited",
+#    config_id=12,
+#    limit_dataset_files=2,
+#)
+
+# config for local files with L1 info
 add_config(
     analysis_hbw,
-    campaign_run2_2017_nano_v9.copy(),
-    config_name="config_2017_limited",
-    config_id=12,
-    limit_dataset_files=2,
+    campaign_run2_2017_nano_L1nano.copy(),
+    config_name="config_2017_L1nano",
+    config_id=17, # no idea yet what this does.
 )

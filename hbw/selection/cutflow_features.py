@@ -8,6 +8,7 @@ from columnflow.util import maybe_import
 from columnflow.columnar_util import set_ak_column
 from columnflow.selection import Selector, SelectionResult, selector
 from hbw.production.prepare_objects import prepare_objects
+from hbw.config.cutflow_variables import add_cutflow_variables
 ak = maybe_import("awkward")
 
 
@@ -17,6 +18,7 @@ ak = maybe_import("awkward")
     produces={
         "cutflow.n_electron", "cutflow.n_muon", "cutflow.n_lepton",
         "cutflow.n_veto_electron", "cutflow.n_veto_muon", "cutflow.n_veto_lepton",
+        "cutflow.L1NNscore"
     },
 )
 def cutflow_features(self: Selector, events: ak.Array, results: SelectionResult, **kwargs) -> ak.Array:
@@ -41,11 +43,14 @@ def cutflow_features(self: Selector, events: ak.Array, results: SelectionResult,
     events = set_ak_column(events, "cutflow.VetoElectron", arr.VetoElectron[:, :2])
     events = set_ak_column(events, "cutflow.VetoMuon", arr.VetoMuon[:, :2])
 
+    events = set_ak_column(events, "cutflow.L1NNscore", arr.L1NNscore)
+
     return events
 
 
 @cutflow_features.init
 def cutflow_features_init(self: Selector) -> None:
+
     # define used and produced columns
     self.lepton_columns = {
         "pt", "eta",

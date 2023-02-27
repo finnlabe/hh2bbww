@@ -87,6 +87,13 @@ def add_cutflow_variables(config: od.Config) -> None:
             x_title=f"Number of {obj}s",
         )
 
+    # L1NN variables
+    config.add_variable(
+        name="L1NNscore",
+        expression="cutflow.L1NNscore",
+        binning=(20, 0, 1),
+        x_title=r"L1 NN output score",
+    )
 
 def add_gen_variables(config: od.Config) -> None:
     """

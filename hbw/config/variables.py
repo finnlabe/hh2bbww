@@ -193,3 +193,34 @@ def add_variables(config: od.Config) -> None:
         binning=(40, 0, 5),
         x_title=r"$\Delta R(j_{1},j_{2})$",
     )
+
+    # L1 object properties
+    for obj in ["L1Mu", "L1EG", "L1Jet"]:
+
+            maxi = 2
+            if obj == "L1Jet": maxi = 4
+
+            # Jets (4 pt-leading jets)
+            for i in range(maxi):
+                config.add_variable(
+                    name=f"{obj}{i+1}_pt",
+                    expression=f"{obj}.pt[:,{i}]",
+                    null_value=EMPTY_FLOAT,
+                    binning=(40, 0., 400.),
+                    unit="GeV",
+                    x_title=obj + r"%i $p_{T}$" % (i + 1),
+                )
+                config.add_variable(
+                    name=f"{obj}{i+1}_eta",
+                    expression=f"{obj}.eta[:,{i}]",
+                    null_value=EMPTY_FLOAT,
+                    binning=(50, 0., 5),
+                    x_title=obj + r"%i $\eta$" % (i + 1),
+                )
+                config.add_variable(
+                    name=f"{obj}{i+1}_phi",
+                    expression=f"{obj}.phi[:,{i}]",
+                    null_value=EMPTY_FLOAT,
+                    binning=(40, -3.2, 3.2),
+                    x_title=obj + r"%i $\phi$" % (i + 1),
+                )

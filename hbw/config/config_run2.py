@@ -14,6 +14,7 @@ import yaml
 from scinum import Number
 import order as od
 
+import law
 from columnflow.util import DotDict, get_root_processes_from_campaign
 from hbw.config.categories import add_categories
 from hbw.config.variables import add_variables
@@ -52,27 +53,31 @@ def add_config(
     # create a config by passing the campaign, so id and name will be identical
     cfg = analysis_hbw.add_config(campaign, name=config_name, id=config_id)
 
+    # custom method and sandbox for determining dataset lfns
+    cfg.x.get_dataset_lfns = None
+    cfg.x.get_dataset_lfns_sandbox = None
+
     # add processes we are interested in
-    cfg.add_process(procs.n.data)
+    #cfg.add_process(procs.n.data)
     cfg.add_process(procs.n.tt)
-    cfg.add_process(procs.n.st)
-    cfg.add_process(procs.n.w_lnu)
-    cfg.add_process(procs.n.dy_lep)
+    #cfg.add_process(procs.n.st)
+    #cfg.add_process(procs.n.w_lnu)
+    #cfg.add_process(procs.n.dy_lep)
     # cfg.add_process(procs.n.qcd)
     # cfg.add_process(procs.n.ttv)
     # cfg.add_process(procs.n.vv)
     # cfg.add_process(procs.n.vv)
     cfg.add_process(procs.n.ggHH_kl_0_kt_1_sl_hbbhww)
-    cfg.add_process(procs.n.ggHH_kl_1_kt_1_sl_hbbhww)
-    cfg.add_process(procs.n.ggHH_kl_2p45_kt_1_sl_hbbhww)
-    cfg.add_process(procs.n.ggHH_kl_5_kt_1_sl_hbbhww)
-    cfg.add_process(procs.n.qqHH_CV_1_C2V_1_kl_1_sl_hbbhww)
-    cfg.add_process(procs.n.qqHH_CV_1_C2V_1_kl_0_sl_hbbhww)
-    cfg.add_process(procs.n.qqHH_CV_1_C2V_1_kl_2_sl_hbbhww)
-    cfg.add_process(procs.n.qqHH_CV_1_C2V_0_kl_1_sl_hbbhww)
-    cfg.add_process(procs.n.qqHH_CV_1_C2V_2_kl_1_sl_hbbhww)
-    cfg.add_process(procs.n.qqHH_CV_0p5_C2V_1_kl_1_sl_hbbhww)
-    cfg.add_process(procs.n.qqHH_CV_1p5_C2V_1_kl_1_sl_hbbhww)
+    #cfg.add_process(procs.n.ggHH_kl_1_kt_1_sl_hbbhww)
+    #cfg.add_process(procs.n.ggHH_kl_2p45_kt_1_sl_hbbhww)
+    #cfg.add_process(procs.n.ggHH_kl_5_kt_1_sl_hbbhww)
+    #cfg.add_process(procs.n.qqHH_CV_1_C2V_1_kl_1_sl_hbbhww)
+    #cfg.add_process(procs.n.qqHH_CV_1_C2V_1_kl_0_sl_hbbhww)
+    #cfg.add_process(procs.n.qqHH_CV_1_C2V_1_kl_2_sl_hbbhww)
+    #cfg.add_process(procs.n.qqHH_CV_1_C2V_0_kl_1_sl_hbbhww)
+    #cfg.add_process(procs.n.qqHH_CV_1_C2V_2_kl_1_sl_hbbhww)
+    #cfg.add_process(procs.n.qqHH_CV_0p5_C2V_1_kl_1_sl_hbbhww)
+    #cfg.add_process(procs.n.qqHH_CV_1p5_C2V_1_kl_1_sl_hbbhww)
 
     # set color of some processes
     colors = {
@@ -105,59 +110,60 @@ def add_config(
     # add datasets we need to study
     dataset_names = [
         # DATA
-        "data_e_b",
+        #"data_e_b",
         # "data_e_c",
         # "data_e_d",
         # "data_e_e",
         # "data_e_f",
-        "data_mu_b",
+        #"data_mu_b",
         # "data_mu_c",
         # "data_mu_d",
         # "data_mu_e",
         # "data_mu_f",
         # TTbar
-        "tt_sl_powheg",
-        "tt_dl_powheg",
-        "tt_fh_powheg",
+        "tt_l1nano",
+        #"tt_sl_powheg",
+        #"tt_dl_powheg",
+        #"tt_fh_powheg",
         # SingleTop
-        "st_tchannel_t_powheg",
-        "st_tchannel_tbar_powheg",
-        "st_twchannel_t_powheg",
-        "st_twchannel_tbar_powheg",
-        "st_schannel_lep_amcatnlo",
-        "st_schannel_had_amcatnlo",
+        #"st_tchannel_t_powheg",
+        #"st_tchannel_tbar_powheg",
+        #"st_twchannel_t_powheg",
+        #"st_twchannel_tbar_powheg",
+        #"st_schannel_lep_amcatnlo",
+        #"st_schannel_had_amcatnlo",
         # WJets
-        "w_lnu_ht70To100_madgraph",
-        "w_lnu_ht100To200_madgraph",
-        "w_lnu_ht200To400_madgraph",
-        "w_lnu_ht400To600_madgraph",
-        "w_lnu_ht600To800_madgraph",
-        "w_lnu_ht800To1200_madgraph",
-        "w_lnu_ht1200To2500_madgraph",
-        "w_lnu_ht2500_madgraph",
+        #"w_lnu_ht70To100_madgraph",
+        #"w_lnu_ht100To200_madgraph",
+        #"w_lnu_ht200To400_madgraph",
+        #"w_lnu_ht400To600_madgraph",
+        #"w_lnu_ht600To800_madgraph",
+        #"w_lnu_ht800To1200_madgraph",
+        #"w_lnu_ht1200To2500_madgraph",
+        #"w_lnu_ht2500_madgraph",
         # DY
-        "dy_lep_m50_ht70to100_madgraph",
-        "dy_lep_m50_ht100to200_madgraph",
-        "dy_lep_m50_ht200to400_madgraph",
-        "dy_lep_m50_ht400to600_madgraph",
-        "dy_lep_m50_ht600to800_madgraph",
-        "dy_lep_m50_ht800to1200_madgraph",
-        "dy_lep_m50_ht1200to2500_madgraph",
-        "dy_lep_m50_ht2500_madgraph",
+        #"dy_lep_m50_ht70to100_madgraph",
+        #"dy_lep_m50_ht100to200_madgraph",
+        #"dy_lep_m50_ht200to400_madgraph",
+        #"dy_lep_m50_ht400to600_madgraph",
+        #"dy_lep_m50_ht600to800_madgraph",
+        #"dy_lep_m50_ht800to1200_madgraph",
+        #"dy_lep_m50_ht1200to2500_madgraph",
+        #"dy_lep_m50_ht2500_madgraph",
         # QCD (msc thesis samples not implemented)
         # TTV, VV -> ignore?; Higgs -> not used in Msc, but would be interesting
         # Signal
-        "ggHH_kl_0_kt_1_sl_hbbhww_powheg",
-        "ggHH_kl_1_kt_1_sl_hbbhww_powheg",
-        "ggHH_kl_2p45_kt_1_sl_hbbhww_powheg",
-        "ggHH_kl_5_kt_1_sl_hbbhww_powheg",
-        "qqHH_CV_1_C2V_1_kl_1_sl_hbbhww_madgraph",
-        "qqHH_CV_1_C2V_1_kl_0_sl_hbbhww_madgraph",
-        "qqHH_CV_1_C2V_1_kl_2_sl_hbbhww_madgraph",
-        "qqHH_CV_1_C2V_0_kl_1_sl_hbbhww_madgraph",
-        "qqHH_CV_1_C2V_2_kl_1_sl_hbbhww_madgraph",
-        "qqHH_CV_0p5_C2V_1_kl_1_sl_hbbhww_madgraph",
-        "qqHH_CV_1p5_C2V_1_kl_1_sl_hbbhww_madgraph",
+        #"ggHH_kl_0_kt_1_sl_hbbhww_powheg",
+        "ggHH_l1nano",
+        #"ggHH_kl_2p45_kt_1_sl_hbbhww_powheg",
+        #"ggHH_kl_5_kt_1_sl_hbbhww_powheg",
+        #"qqHH_CV_1_C2V_1_kl_1_sl_hbbhww_madgraph",
+        #"qqHH_CV_1_C2V_1_kl_0_sl_hbbhww_madgraph",
+        #"qqHH_CV_1_C2V_1_kl_2_sl_hbbhww_madgraph",
+        #"qqHH_CV_1_C2V_0_kl_1_sl_hbbhww_madgraph",
+        #"qqHH_CV_1_C2V_2_kl_1_sl_hbbhww_madgraph",
+        #"qqHH_CV_0p5_C2V_1_kl_1_sl_hbbhww_madgraph",
+        #"qqHH_CV_1p5_C2V_1_kl_1_sl_hbbhww_madgraph",
     ]
     for dataset_name in dataset_names:
         dataset = cfg.add_dataset(campaign.get_dataset(dataset_name))
@@ -198,6 +204,7 @@ def add_config(
         "small": ["ggHH_kl_1_kt_1_sl_hbbhww", "st", "tt"],
         "signal": ["ggHH_*"],
         "bkg": ["tt", "st", "w_lnu", "dy_lep"],
+        "L1NNtests": ["ggHH_kl_1_kt_1_sl_hbbhww", "tt"]
     }
 
     # dataset groups for conveniently looping over certain datasets
@@ -562,6 +569,13 @@ def add_config(
 
         # hh-btag repository (lightweight) with TF saved model directories
         "hh_btag_repo": ("https://github.com/hh-italian-group/HHbtag/archive/1dc426053418e1cab2aec021802faf31ddf3c5cd.tar.gz", "v1"),  # noqa
+    
+        # the L1 NN model
+        "L1NN_network": ("/nfs/dust/cms/user/flabe/L1Trigger/Jupyter/run3/old/models/GluGluToHHTo4B_cHHH1__large/model_fold0.h5", "v1"),
+
+        # its standard scaler
+        "L1NN_scaler": ("/nfs/dust/cms/user/flabe/L1Trigger/Jupyter/run3/old/models/GluGluToHHTo4B_cHHH1__large/scaler_fold0.pkl", "v1"),
+
     })
 
     # external files with more complex year dependence
@@ -660,3 +674,30 @@ def add_config(
     # add cutflow variables
     add_cutflow_variables(cfg)
     add_gen_variables(cfg)
+
+    # custom lfn retrieval method in case the underlying campaign is custom uhh
+    if cfg.campaign.x("custom", {}).get("creator") == "L1nano":
+        def get_dataset_lfns(
+            dataset_inst: od.Dataset,
+            shift_inst: od.Shift,
+            dataset_key: str,
+        ) -> list[str]:
+
+            # this just needs to give me the directory after the "location" in the campaign definition
+            # so in my case just tt (the process)
+            lfn_base = law.wlcg.WLCGDirectoryTarget(
+                f"/" + dataset_key + "/",
+                fs = f"wlcg_fs_{cfg.campaign.x.custom['name']}",
+            )
+
+            # loop though files and interpret paths as lfns
+            return [
+                lfn_base.child(basename, type="f").path
+                for basename in lfn_base.listdir(pattern="*.root")
+            ]
+
+        # define the lfn retrieval function
+        cfg.x.get_dataset_lfns = get_dataset_lfns
+
+        # define custom remote fs's to look at
+        cfg.x.get_dataset_lfns_remote_fs = lambda dataset_inst: f"wlcg_fs_{cfg.campaign.x.custom['name']}"

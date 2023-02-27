@@ -7,7 +7,7 @@ Selection methods for HHtobbWW.
 from collections import defaultdict
 from typing import Tuple
 
-from columnflow.util import maybe_import
+from columnflow.util import maybe_import, dev_sandbox
 from columnflow.columnar_util import set_ak_column
 from columnflow.production.util import attach_coffea_behavior
 
@@ -19,6 +19,7 @@ from hbw.production.gen_hbw_decay import gen_hbw_decay_products
 from hbw.selection.stats import increment_stats
 from hbw.selection.cutflow_features import cutflow_features
 from hbw.selection.gen_hbw_features import gen_hbw_decay_features, gen_hbw_matching
+from hbw.selection.nn_trigger import NN_trigger_selection
 
 np = maybe_import("numpy")
 ak = maybe_import("awkward")
@@ -177,16 +178,17 @@ def lepton_selection(
 
 @selector(
     uses={
-        jet_selection, forward_jet_selection, lepton_selection, cutflow_features,
+        jet_selection, forward_jet_selection, lepton_selection, cutflow_features, NN_trigger_selection,
         category_ids, process_ids, increment_stats, attach_coffea_behavior,
         "mc_weight",  # not opened per default but always required in Cutflow tasks
     },
     produces={
-        jet_selection, forward_jet_selection, lepton_selection, cutflow_features,
+        jet_selection, forward_jet_selection, lepton_selection, cutflow_features, NN_trigger_selection,
         category_ids, process_ids, increment_stats, attach_coffea_behavior,
         "mc_weight",  # not opened per default but always required in Cutflow tasks
     },
     exposed=True,
+    sandbox=dev_sandbox("bash::$HBW_BASE/sandboxes/venv_ml_keras.sh"),
 )
 def default(
     self: Selector,
@@ -199,6 +201,12 @@ def default(
 
     # prepare the selection results that are updated at every step
     results = SelectionResult()
+
+    # L1 trigger
+    print("DO WE CALL THIS?")
+    for i in range(25): print("#####################################")
+    events, trig_results = self[NN_trigger_selection](events, stats, **kwargs)
+    results += trig_results
 
     # jet selection
     events, jet_results = self[jet_selection](events, stats, **kwargs)
