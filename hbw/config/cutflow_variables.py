@@ -142,6 +142,14 @@ def add_cutflow_variables(config: od.Config) -> None:
         x_title="True mean number of poisson distribution from which number of interactions has been sampled",
     )
 
+    # L1NN variable
+    config.add_variable(
+        name="cf_L1NNscore",
+        expression="cutflow.L1NNscore",
+        binning=(20, 0, 1),
+        x_title=r"L1 NN output score",
+    )
+
 
 @call_once_on_config()
 def add_gen_variables(config: od.Config) -> None:

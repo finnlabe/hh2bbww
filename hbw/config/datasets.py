@@ -12,16 +12,17 @@ import order as od
 import cmsdb.processes as procs
 from columnflow.tasks.external import GetDatasetLFNs
 
+import glob
 
 logger = law.logger.get_logger(__name__)
-
 
 def add_hbw_datasets(config: od.Config, campaign: od.Campaign):
     # load custom produced datasets into campaign
     get_custom_hh_datasets(campaign)
 
     # use custom get_dataset_lfns function
-    config.x.get_dataset_lfns = get_dataset_lfns
+    if config.has_tag("is_l1nano"): config.x.get_dataset_lfns = get_dataset_lfns_l1nano
+    else: config.x.get_dataset_lfns = get_dataset_lfns
 
     # add datasets we need to study
     dataset_names = [
@@ -84,58 +85,89 @@ def add_hbw_datasets(config: od.Config, campaign: od.Campaign):
         # "hh_ggf_bbtautau_madgraph",
     ]
 
-    if config.has_tag("is_sl") and config.has_tag("is_nonresonant"):
-        # non-resonant HH -> bbWW(qqlnu) Signal
-        if config.has_tag("custom_signals"):
-            dataset_names += [
-                "ggHH_kl_0_kt_1_sl_hbbhww_custom",
-                "ggHH_kl_1_kt_1_sl_hbbhww_custom",
-                "ggHH_kl_2p45_kt_1_sl_hbbhww_custom",
-                "ggHH_kl_5_kt_1_sl_hbbhww_custom",
-            ]
-        else:
-            dataset_names += [
-                "ggHH_kl_0_kt_1_sl_hbbhww_powheg",
-                "ggHH_kl_1_kt_1_sl_hbbhww_powheg",
-                "ggHH_kl_2p45_kt_1_sl_hbbhww_powheg",
-                "ggHH_kl_5_kt_1_sl_hbbhww_powheg",
-            ]
+    # reducing the l1 nano dataseta to only the ones that we currently have available
+    # can be removed later once we have all
+    if config.has_tag("is_l1nano"):
+        dataset_names = [
+            # DATA
+            # no data with our trigger :(
+            # TTbar
+            "tt_sl_powheg",
+            "tt_dl_powheg",
+            "tt_fh_powheg",
+            # SingleTop
+            
+            # WJets
 
-        dataset_names += [
-            "qqHH_CV_1_C2V_1_kl_1_sl_hbbhww_madgraph",
-            "qqHH_CV_1_C2V_1_kl_0_sl_hbbhww_madgraph",
-            "qqHH_CV_1_C2V_1_kl_2_sl_hbbhww_madgraph",
-            "qqHH_CV_1_C2V_0_kl_1_sl_hbbhww_madgraph",
-            "qqHH_CV_1_C2V_2_kl_1_sl_hbbhww_madgraph",
-            "qqHH_CV_0p5_C2V_1_kl_1_sl_hbbhww_madgraph",
-            "qqHH_CV_1p5_C2V_1_kl_1_sl_hbbhww_madgraph",
+            # DY
+            
+            # QCD (no LHEScaleWeight)
+            "qcd_mu_pt15to20_pythia", "qcd_mu_pt20to30_pythia",
+            "qcd_mu_pt30to50_pythia", "qcd_mu_pt50to80_pythia",
+            "qcd_mu_pt80to120_pythia", "qcd_mu_pt120to170_pythia",
+            "qcd_mu_pt170to300_pythia", "qcd_mu_pt300to470_pythia",
+            "qcd_mu_pt470to600_pythia", "qcd_mu_pt600to800_pythia",
+            "qcd_mu_pt800to1000_pythia", "qcd_mu_pt1000_pythia",
+            
+            # signals
+            "ggHH_kl_0_kt_1_sl_hbbhww_powheg",
+            "ggHH_kl_1_kt_1_sl_hbbhww_powheg",
+            "ggHH_kl_2p45_kt_1_sl_hbbhww_powheg",
+            "ggHH_kl_5_kt_1_sl_hbbhww_powheg",
         ]
+    else: # this is only relevant in the non-L1nano case
+        if config.has_tag("is_sl") and config.has_tag("is_nonresonant"):
+            # non-resonant HH -> bbWW(qqlnu) Signal
+            if config.has_tag("custom_signals"):
+                dataset_names += [
+                    "ggHH_kl_0_kt_1_sl_hbbhww_custom",
+                    "ggHH_kl_1_kt_1_sl_hbbhww_custom",
+                    "ggHH_kl_2p45_kt_1_sl_hbbhww_custom",
+                    "ggHH_kl_5_kt_1_sl_hbbhww_custom",
+                ]
+            else:
+                dataset_names += [
+                    "ggHH_kl_0_kt_1_sl_hbbhww_powheg",
+                    "ggHH_kl_1_kt_1_sl_hbbhww_powheg",
+                    "ggHH_kl_2p45_kt_1_sl_hbbhww_powheg",
+                    "ggHH_kl_5_kt_1_sl_hbbhww_powheg",
+                ]
 
-    if config.has_tag("is_dl") and config.has_tag("is_nonresonant"):
-        # non-resonant HH -> bbWW(lnulnu) Signal
-        dataset_names += [
-            "ggHH_kl_0_kt_1_dl_hbbhww_powheg",
-            "ggHH_kl_1_kt_1_dl_hbbhww_powheg",
-            "ggHH_kl_2p45_kt_1_dl_hbbhww_powheg",
-            "ggHH_kl_5_kt_1_dl_hbbhww_powheg",
-            "qqHH_CV_1_C2V_1_kl_1_dl_hbbhww_madgraph",
-            "qqHH_CV_1_C2V_1_kl_0_dl_hbbhww_madgraph",
-            "qqHH_CV_1_C2V_1_kl_2_dl_hbbhww_madgraph",
-            "qqHH_CV_1_C2V_0_kl_1_dl_hbbhww_madgraph",
-            "qqHH_CV_1_C2V_2_kl_1_dl_hbbhww_madgraph",
-            "qqHH_CV_0p5_C2V_1_kl_1_dl_hbbhww_madgraph",
-            "qqHH_CV_1p5_C2V_1_kl_1_dl_hbbhww_madgraph",
-        ]
-    if config.has_tag("is_sl") and config.has_tag("is_resonant"):
-        for mass in config.x.graviton_masspoints:
-            dataset_names.append(f"graviton_hh_ggf_bbww_m{mass}_madgraph")
-        for mass in config.x.radion_masspoints:
-            dataset_names.append(f"radion_hh_ggf_bbww_m{mass}_madgraph")
+            dataset_names += [
+                "qqHH_CV_1_C2V_1_kl_1_sl_hbbhww_madgraph",
+                "qqHH_CV_1_C2V_1_kl_0_sl_hbbhww_madgraph",
+                "qqHH_CV_1_C2V_1_kl_2_sl_hbbhww_madgraph",
+                "qqHH_CV_1_C2V_0_kl_1_sl_hbbhww_madgraph",
+                "qqHH_CV_1_C2V_2_kl_1_sl_hbbhww_madgraph",
+                "qqHH_CV_0p5_C2V_1_kl_1_sl_hbbhww_madgraph",
+                "qqHH_CV_1p5_C2V_1_kl_1_sl_hbbhww_madgraph",
+            ]
 
-    if config.has_tag("is_dl") and config.has_tag("is_resonant"):
-        logger.warning(
-            f"For analysis {config.analysis.name}: dileptonic resonant samples still needs to be implemented",
-        )
+        if config.has_tag("is_dl") and config.has_tag("is_nonresonant"):
+            # non-resonant HH -> bbWW(lnulnu) Signal
+            dataset_names += [
+                "ggHH_kl_0_kt_1_dl_hbbhww_powheg",
+                "ggHH_kl_1_kt_1_dl_hbbhww_powheg",
+                "ggHH_kl_2p45_kt_1_dl_hbbhww_powheg",
+                "ggHH_kl_5_kt_1_dl_hbbhww_powheg",
+                "qqHH_CV_1_C2V_1_kl_1_dl_hbbhww_madgraph",
+                "qqHH_CV_1_C2V_1_kl_0_dl_hbbhww_madgraph",
+                "qqHH_CV_1_C2V_1_kl_2_dl_hbbhww_madgraph",
+                "qqHH_CV_1_C2V_0_kl_1_dl_hbbhww_madgraph",
+                "qqHH_CV_1_C2V_2_kl_1_dl_hbbhww_madgraph",
+                "qqHH_CV_0p5_C2V_1_kl_1_dl_hbbhww_madgraph",
+                "qqHH_CV_1p5_C2V_1_kl_1_dl_hbbhww_madgraph",
+            ]
+        if config.has_tag("is_sl") and config.has_tag("is_resonant"):
+            for mass in config.x.graviton_masspoints:
+                dataset_names.append(f"graviton_hh_ggf_bbww_m{mass}_madgraph")
+            for mass in config.x.radion_masspoints:
+                dataset_names.append(f"radion_hh_ggf_bbww_m{mass}_madgraph")
+
+        if config.has_tag("is_dl") and config.has_tag("is_resonant"):
+            logger.warning(
+                f"For analysis {config.analysis.name}: dileptonic resonant samples still needs to be implemented",
+            )
 
     # loop over all dataset names and add them to the config
     for dataset_name in dataset_names:
@@ -269,3 +301,22 @@ def get_dataset_lfns(
         lfn_base.child(basename, type="f").path
         for basename in lfn_base.listdir(pattern="*.root")
     ]
+    
+
+def get_dataset_lfns_l1nano(
+    dataset_inst: od.Dataset,
+    shift_inst: od.Shift,
+    dataset_key: str,
+) -> list[str]:
+    """
+    Custom method to obtain custom NanoAOD datasets for l1 nano files from Finn
+    """
+
+    print("dataset name:", dataset_inst.name)
+    print("dataset_key:", dataset_key)
+
+    dataset_name = dataset_key.split("/")[1]
+
+    # no idea if this is clean, but I could not get the LocalDirectoryTarget to give me these paths :D
+    # this is why I'm just globbing here
+    return glob.glob(f"/pnfs/desy.de/cms/tier2/store/user/flabe/custom_L1_Nano/sixthproduction/{dataset_name}/*/*/*/*.root")

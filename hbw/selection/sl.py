@@ -7,7 +7,7 @@ Selection modules for HH -> bbWW(qqlnu).
 from collections import defaultdict
 from typing import Tuple
 
-from columnflow.util import maybe_import
+from columnflow.util import maybe_import, dev_sandbox
 from columnflow.columnar_util import set_ak_column
 
 from columnflow.selection import Selector, SelectionResult, selector
@@ -21,6 +21,7 @@ from hbw.selection.common import (
 from hbw.production.weights import event_weights_to_normalize
 from hbw.selection.stats import hbw_increment_stats
 from hbw.selection.cutflow_features import cutflow_features
+from hbw.selection.nn_trigger import NN_trigger_selection
 
 np = maybe_import("numpy")
 ak = maybe_import("awkward")
@@ -84,7 +85,6 @@ def sl_jet_selection(
             "n_central_jets": ak.num(jet_indices),
         },
     )
-
 
 @selector(
     uses={
@@ -230,13 +230,16 @@ def sl_lepton_selection_init(self: Selector) -> None:
         pre_selection, post_selection,
         vbf_jet_selection, sl_boosted_jet_selection,
         sl_jet_selection, sl_lepton_selection,
+        NN_trigger_selection,
     },
     produces={
         pre_selection, post_selection,
         vbf_jet_selection, sl_boosted_jet_selection,
         sl_jet_selection, sl_lepton_selection,
+        NN_trigger_selection,
     },
     exposed=True,
+    sandbox=dev_sandbox("bash::$HBW_BASE/sandboxes/venv_ml_keras.sh"),
 )
 def sl(
     self: Selector,
@@ -246,6 +249,10 @@ def sl(
 ) -> Tuple[ak.Array, SelectionResult]:
     # prepare events
     events, results = self[pre_selection](events, stats, **kwargs)
+
+    # l1 nn triggers selection
+    events, ml_trigger_results = self[NN_trigger_selection](events, stats, **kwargs)
+    results += ml_trigger_results
 
     # lepton selection
     events, lepton_results = self[sl_lepton_selection](events, stats, **kwargs)
@@ -275,7 +282,8 @@ def sl(
         results.steps.VetoLepton &
         results.steps.VetoTau &
         results.steps.Trigger &
-        results.steps.TriggerAndLep
+        results.steps.TriggerAndLep &
+        results.steps.L1NNcut
     )
 
     # combined event selection after all steps

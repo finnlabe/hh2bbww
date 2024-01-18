@@ -360,6 +360,7 @@ def add_config(
 
     # external files
     json_mirror = "/afs/cern.ch/user/m/mrieger/public/mirrors/jsonpog-integration-9ea86c4c"
+    L1NN_base_path = "/nfs/dust/cms/user/flabe/L1Trigger/Jupyter/run3/HHtobbWW/models/forfwk/model__GluGluToHHTo2B2VLNu2J_cHHH1_Run2__SingleNu_Summer22__mu__topo_32_32_32_32_32__relu__binary_crossentropy__lecun_uniform__Adam_0p0005__dropout_0p4__es_10/"
     cfg.x.external_files = DotDict.wrap({
         # jet energy correction
         "jet_jerc": (f"{json_mirror}/POG/JME/{year}{corr_postfix}_UL/jet_jerc.json.gz", "v1"),
@@ -375,6 +376,17 @@ def add_config(
 
         # met phi corrector
         "met_phi_corr": (f"{json_mirror}/POG/JME/{year}{corr_postfix}_UL/met.json.gz", "v1"),
+
+        # the L1 NN info file
+        "L1NN_infos" : (L1NN_base_path + "/info.yml", "v1"),
+
+        # the L1 NN model
+        "L1NN_network": (L1NN_base_path + "/model.h5", "v1"),
+
+        # its standard scaler
+        "L1NN_scaler": (L1NN_base_path + "/scaler.pkl", "v1"),
+    
+        
     })
 
     # external files with more complex year dependence
